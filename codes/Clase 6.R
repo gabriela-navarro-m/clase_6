@@ -24,7 +24,7 @@ for ( paquete in c("tidyverse",'viridis','forcats') ){
 }
 
 #### 0.3 Llamar las librerias
-library('tidyverse') ; library('viridis') ; library('forcats')
+library('tidyverse') ; library('viridis') ; library('forcats') ; library('ggplot2')
 
 #-------------------#
 # 1. Graficos en R  #
@@ -60,8 +60,8 @@ hist(geih$p6500, col ="#69b3a2" , ylab = "Frecuencia" ,
                                   main = "Histograma de \n los ingresos") # Etiquetas en los ejes
 
 #### 1.1.3 Histogramas usando ggplo()
-ggplot(data = geih, aes(x=p6500)) + geom_histogram() # Podemos escribirlo de esta manera
 ggplot() + geom_histogram(data = geih, aes(x=p6500)) # O de esta manera
+ggplot(data = geih, aes(x=p6500)) + geom_histogram() # Podemos escribirlo de esta manera
 print('Explicar diferencia')
 
 ##### 1.1.3.1 Creemos un objeto al que le podamos agregar atributos
@@ -71,13 +71,15 @@ p = ggplot() + geom_histogram(data = geih, aes(x=p6500) , colour = "#69b3a2" , f
 p
 
 ##### 1.1.3.2 Agreguemos los label
-p + xlab('Frecuencia') + ylab('Ingresos') + ggtitle("Histograma de los ingresos")
+p + ylab('Frecuencia') + xlab('Ingresos') + ggtitle("Histograma de los ingresos")
+
 p = p + labs(title = "Histograma de los ingresos", subtitle = "(2018)",
              caption = "Fuente: GEIH.",x = "Ingresos",y = "Frecuencia")
 p 
 
 ##### 1.1.3.3 Agreguemos un tema
 browseURL(url = "https://ggplot2.tidyverse.org/reference/ggtheme.html", browser = getOption("browser")) # Temas en R
+browseURL(url = "https://ggplot2.tidyverse.org/reference/theme.html", browser = getOption("browser")) # Argumentos de theme()
 p + theme_bw()
 p + theme_minimal()
 p + theme_light()
@@ -101,10 +103,10 @@ ggplot() + geom_histogram(data = geih, aes(x=p6500,group=sexo,colour=sexo,fill =
 #-------------------------#
 
 #### 1.2.1. Cantidad de personas
-geih %>% group_by(dpto) %>% summarize(total = sum(fex_c_2011)) %>%
-        ggplot(aes(x=dpto, y=total)) +
-        geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4) +
-        coord_flip() + xlab('') + ylab("Cantidad de personas") + theme_bw()
+geih %>% group_by(dpto) %>% summarize(total = sum(fex_c_2011)) %>% 
+         ggplot(data = ., aes(x=dpto, y=total)) +
+         geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4) +
+         coord_flip() + xlab('') + ylab("Cantidad de personas") + theme_bw()
 
 #### 1.2.2 Ordenar de mayor a menor
 geih %>% group_by(dpto) %>% summarize(total = sum(fex_c_2011)) %>%
@@ -126,27 +128,30 @@ geih %>% group_by(p6050) %>% summarize(total = sum(fex_c_2011)) %>% arrange(p605
 #-----------------------------#
 
 #### 1.3.1 Scaterplot sencillo
-geih %>% group_by(dpto) %>% summarize(salario = weighted.mean(x = p6050,w = fex_c_2011))
+geih %>% group_by(dpto) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011, na.rm = T)) 
 
-geih %>% group_by(dpto) %>% summarize(salario = weighted.mean(x = p6050,w = fex_c_2011)) %>%
+geih %>% group_by(dpto) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011, na.rm = T)) %>%
          ggplot() + geom_point(aes(x=dpto,y=salario),colour='darkblue',size=3) + theme_bw() # Cambio el size
 
-geih %>% group_by(dpto) %>% summarize(salario = weighted.mean(x = p6050,w = fex_c_2011)) %>%
+geih %>% group_by(dpto) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011, na.rm = T)) %>%
         ggplot() + geom_point(aes(x=dpto,y=salario),shape=4,colour='darkblue',size=3) + theme_bw() # Cambio el tipo de shape
 
 
 #### 1.3.1 Scaterplot por gurpos
-geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6050,w = fex_c_2011)) 
+geih %>% subset(is.na(p6500)==F) %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011)) 
+geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011 , na.rm = T)) 
 
-geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6050,w = fex_c_2011)) %>%
+geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011, na.rm = T)) %>%
         ggplot() + geom_point(aes(x=dpto,y=salario,group=sexo,colour=sexo),size=3) + theme_bw() # color por tipo
 
 
-geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6050,w = fex_c_2011)) %>%
+geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011, na.rm = T)) %>%
         ggplot() + geom_point(aes(x=dpto,y=salario,group=sexo,shape=sexo),color="red",size=3) + theme_light() # shape por tipo
 
+geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011, na.rm = T)) %>%
+        ggplot() + geom_point(aes(x=dpto,y=salario),color="red",size=3) + theme_light() # shape por tipo
 
-geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6050,w = fex_c_2011)) %>%
+geih %>% group_by(dpto,sexo) %>% summarize(salario = weighted.mean(x = p6500,w = fex_c_2011, na.rm = T)) %>%
         ggplot() + geom_point(aes(x=dpto,y=salario,group=sexo,shape=sexo,color=sexo),size=3) + theme_light() # color y shape por tipo
 
 #-------------------------#
